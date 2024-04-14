@@ -19,3 +19,14 @@ gradle-app.setting
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
+.settings
+
+# Ignore MacOS specific
+.DS_Store
+
+# Ignore generated files & folders
+gradle
+bin
+gradle
+gradlew
+gradlew.bat
