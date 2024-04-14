@@ -1,0 +1,2 @@
+# WOPIServer
+A lightweight WOPIServer
