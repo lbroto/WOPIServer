@@ -12,7 +12,7 @@ public class WOPIException extends Throwable {
 	public static enum Issue {NOT_FOUND, FORBIDDEN, ACCESS_ERROR};
 	public static enum Type{DOCUMENT};
 	public static enum Operation{
-		GET_META_DATA("GETTING META DATA"), READ("READING"),WRITE("WRITING"),CREATE("CREATING"),MODIFY("MODIFYING"),LOOKUP("SEARCHING"),LIST("LISTING"),COPY("COPYING");
+		GET_META_DATA("GETTING META DATA"), READ("READING"),WRITE("WRITING"),CREATE("CREATING"),MODIFY("MODIFYING"),LOOKUP("SEARCHING"),LIST("LISTING"),COPY("COPYING"), REPLACE("REPLACING"), RENAME("RENAMING"), ENCODE("ENCODING");
 		private final String valueToDisplay;
 		private Operation(String valueToDisplay) {
 			this.valueToDisplay = valueToDisplay;	

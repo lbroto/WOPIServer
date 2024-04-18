@@ -18,7 +18,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.wopiserver.configuration.itf.ConfigurationService;
 import org.wopiserver.documents.itf.DocumentService;
-import org.wopiserver.exception.WOPIException;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -135,7 +134,7 @@ public class WopiServerApplication {
 
 		// here the application has been spawned in the container
 		configurationService.setConfiguration(argsMap.get("baseDir"));
-		try {
+	//	try {
 			switch(instanceMode) {
 				case InstanceMode.SERVER_AUTO_EXPOSITION:
 					logger.warn("Started WOPI "+instanceMode);
@@ -143,15 +142,13 @@ public class WopiServerApplication {
 					
 				case InstanceMode.CLI_DOCUMENT:				
 					logger.warn("Started WOPI "+instanceMode);
-					if(argsMap.containsKey("listDocuments"))
-						documentService.listDocuments();
 					break;	
 					
 				}
 			
-			} catch(WOPIException e) {
-			e.logException();
-		}		
+	//		} catch(WOPIException e) {
+	//		e.logException();
+	//	}		
 	}
 	
 	private static void parseDocumentMode(CommandLine line) {
@@ -210,6 +207,7 @@ public class WopiServerApplication {
 						"All these mode required the parameter baseDir.\n\n" +
 						"************************** SUB-MODE DOCUMENT ************************\n\n" +
 						"This mode permits to manage the documents handled by this WOPI instance. Only listDocuments is supported at this time.\n" +
+						"If the WOPI Server is started in SUB-MODE AUTO EXPOSITION, it must be started to list the documents managed\n" +
 						"Example: java -jar WopiServerApplication.jar --baseDir /Users/laurent/tmp --listDocuments\n\n" +
 						"\n+-------------------+\n" +
 						  "| DEBUGGING OPTIONS |\n" +

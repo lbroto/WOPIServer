@@ -1,5 +1,7 @@
 package org.wopiserver.controller;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,14 +48,36 @@ public class RESTController {
 	@Autowired
 	private ObjectMapper mapper;
 	
+	
+	/** 
+	 * 
+	 * Not WOPI Method - To get all the URL managed by this instance 
+	 * 
+	 * If the parameter clientEndPoint is provided, the URL are computed to be used directly from a browser
+	 * 
+	 */
+	@GetMapping("/wopi/files")
+	public ResponseEntity<List<String>> listFileURL(HttpServletRequest request, @RequestParam(name="access_token") String accessToken) {
+		logger.warn("Request for: list of documents managed by this instance");
+		try {
+			List<String> url=documentInterface.listDocuments(null,buildHost(request));
+			
+			return new ResponseEntity<List<String>>(url, HttpStatus.OK);
+			
+		} catch (WOPIException e) {
+			e.logException();
+			throw new ResponseStatusException(e.getHttpStatus());
+		}		
+	}
+	
 	/** 
 	 * 
 	 * Request for document properties 
 	 * 
 	 */
 	@GetMapping("/wopi/files/{documentId}")
-	public ResponseEntity<Document> checkFileInfo(@PathVariable String documentId, @RequestParam(name="access_token") String accessToken) {
-		logger.warn("Request information on file with id "+documentId);
+	public ResponseEntity<Document> checkFileInfo(@PathVariable("documentId") String documentId, @RequestParam(name="access_token") String accessToken) {
+		logger.warn("Request for: information on file with id "+documentId);
 		try {
 			Document d=documentInterface.getDocumentProperties(documentId, accessToken);
 			
@@ -74,16 +98,16 @@ public class RESTController {
 	 * 
 	 * Request for save as or extension change
 	 * 
-	 * COOL provides only X-WOPI-SuggestedTarget => we just deal with it for now 
+	 * CODE provides only X-WOPI-SuggestedTarget => we just deal with it for now 
 	 * 
 	 */
 	@PostMapping(value="/wopi/files/{documentId}", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<PutRelativeFileResponse> putRelativeFile( HttpServletRequest request,
 			@RequestHeader("X-WOPI-SuggestedTarget") String newPath, 
-			@PathVariable String documentId, 
+			@PathVariable("documentId") String documentId, 
 			@RequestParam(name="access_token") String accessToken, 
 			@RequestBody byte[] content) {
-		logger.warn("Save document "+documentId+" *AS* "+newPath);
+		logger.warn("Request for: Save document "+documentId+" *as* "+newPath);
 		
 		try {
 			PutRelativeFileResponse putRelativeFileResponse;
@@ -117,8 +141,8 @@ public class RESTController {
 	 * 
 	 */
 	@PostMapping(value="/wopi/files/{documentId}/contents", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-	public ResponseEntity<PutFileResponse> putFile(@PathVariable String documentId, @RequestParam(name="access_token") String accessToken, @RequestBody byte[] content) {
-		logger.warn("Update content of the file "+documentId);
+	public ResponseEntity<PutFileResponse> putFile(@PathVariable("documentId") String documentId, @RequestParam(name="access_token") String accessToken, @RequestBody byte[] content) {
+		logger.warn("Request for: Update content of the file "+documentId);
 		try {
 			logger.trace("Getting "+content.length+" bytes");
 			String lastModifiedTime=documentInterface.replaceContent(documentId, accessToken, content);
@@ -141,8 +165,8 @@ public class RESTController {
 	 * 
 	 */
 	@GetMapping(value="/wopi/files/{documentId}/contents", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-	public ResponseEntity<byte[]> getFile(@PathVariable String documentId, @RequestParam(name="access_token") String accessToken) {
-		logger.warn("Request contents of file with id "+documentId);
+	public ResponseEntity<byte[]> getFile(@PathVariable("documentId") String documentId, @RequestParam(name="access_token") String accessToken) {
+		logger.warn("Request for: contents of file with id "+documentId);
 		try {
 			byte [] responseByteArray=documentInterface.getContent(documentId, accessToken);
 			// log the response if in trace level

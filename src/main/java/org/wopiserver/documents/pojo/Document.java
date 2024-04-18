@@ -1,10 +1,8 @@
 package org.wopiserver.documents.pojo;
 
-import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,8 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Document {
 
 	/** WOPI Server metadata */
-	@JsonIgnore private UUID documentId;
-	@JsonIgnore private String baseFileNameWithPath;
+	@JsonIgnore private String documentId;
 	
 	/** Collabora Online WOPI Minimum set of properties */
 	@JsonProperty("BaseFileName") 
@@ -23,7 +20,7 @@ public class Document {
 	private String ownerId;							// immutable after creation
 	
 	@JsonProperty("Size") 
-	private long size;								// read each time needed
+	private long size;								// updated time needed
 	
 	@JsonProperty("UserId") 
 	private String userId;							// depends of the granting
@@ -74,12 +71,8 @@ public class Document {
 	
 	@Override
 	public String toString() {
-		String str=documentId+";"+baseFileNameWithPath+";"+ownerId;
+		String str=documentId+";"+baseFileName+";"+ownerId;
 		return str;
-	}
-	
-	public String documentWithoutPermissionToString() {
-		return "Document "+documentId+" => baseFileNameWithPath: "+baseFileNameWithPath+" ; ownerId: "+ownerId;
 	}
 	
 	public boolean isHidePrintOption() {
@@ -155,14 +148,14 @@ public class Document {
 	public void setUserCanWrite(boolean userCanWrite) {
 		this.userCanWrite = userCanWrite;
 	}
-	public UUID getDocumentId() {
+	public String getDocumentId() {
 		return documentId;
 	}
-	public void setDocumentId(UUID fileId) {
+	public void setDocumentId(String fileId) {
 		this.documentId = fileId;
 	}
 	public String getBaseFileName() {
-		return new File(baseFileNameWithPath).getName();
+		return baseFileName;
 	}
 	public String getOwnerId() {
 		return ownerId;
@@ -198,11 +191,82 @@ public class Document {
 		this.supportsUpdate = supportsUpdate;
 	}
 
-	public String getBaseFileNameWithPath() {
-		return baseFileNameWithPath;
-	}
+	private Document(DocumentBuilder d) {
+		
+		documentId=d.documentId;
+		baseFileName=d.baseFileName;
+		ownerId=d.ownerId;
+		size=d.size;
+		userId=d.userId;
+		userCanWrite=d.userCanWrite;
+		userFriendlyName=d.userFriendlyName;
+		lastModifiedTime=d.lastModifiedTime;
 
-	public void setBaseFileNameWithPath(String baseFileNameWithPath) {
-		this.baseFileNameWithPath = baseFileNameWithPath;
+		// immutable properties
+		setHidePrintOption(false);
+		setDisablePrint(false);
+		setHideSaveOption(false);
+		setHideExportOption(false);
+		setDisableExport(false);
+		setDisableCopy(false);
+		setEnableOwnerTermination(true);
+		setIsUserLocked(false);
+		setIsUserRestricted(false);
+		setUserCanNotWriteRelative(false);
+		setSupportsUpdate(true);
+	}
+	
+	public static class DocumentBuilder {
+		
+		public DocumentBuilder(String documentId, String baseFileName, String ownerId) {
+			
+			// mandatory
+			this.documentId=documentId;
+			this.baseFileName=baseFileName;
+			this.ownerId=ownerId;
+		}
+		
+		public Document build() {
+			return new Document(this);
+		}
+		private String documentId;
+		private String baseFileName;					// immutable after creation
+		private String ownerId;							// immutable after creation
+		private long size;								// read each time needed
+		private String userId;							// depends of the granting
+		private boolean userCanWrite;					// immutable after adding a permission
+		private String userFriendlyName;				// depends if provided or not
+		private Date lastModifiedTime;					// depends on FS time
+		public void setDocumentId(String documentId) {
+			this.documentId = documentId;
+		}
+		public DocumentBuilder setBaseFileName(String baseFileName) {
+			this.baseFileName = baseFileName;
+			return this;
+		}
+		public DocumentBuilder setOwnerId(String ownerId) {
+			this.ownerId = ownerId;
+			return this;
+		}
+		public DocumentBuilder setSize(long size) {
+			this.size = size;
+			return this;
+		}
+		public DocumentBuilder setUserId(String userId) {
+			this.userId = userId;
+			return this;
+		}
+		public DocumentBuilder setUserCanWrite(boolean userCanWrite) {
+			this.userCanWrite = userCanWrite;
+			return this;
+		}
+		public DocumentBuilder setUserFriendlyName(String userFriendlyName) {
+			this.userFriendlyName = userFriendlyName;
+			return this;
+		}
+		public DocumentBuilder setLastModifiedTime(Date lastModifiedTime) {
+			this.lastModifiedTime = lastModifiedTime;
+			return this;
+		}
 	}
 }
