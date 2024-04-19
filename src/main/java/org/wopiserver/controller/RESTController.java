@@ -1,6 +1,6 @@
 package org.wopiserver.controller;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,12 +57,12 @@ public class RESTController {
 	 * 
 	 */
 	@GetMapping("/wopi/files")
-	public ResponseEntity<List<String>> listFileURL(HttpServletRequest request, @RequestParam(name="access_token") String accessToken) {
+	public ResponseEntity<Collection<String>> listFileURL(HttpServletRequest request, @RequestParam(name="access_token", required = false) String accessToken) {
 		logger.warn("Request for: list of documents managed by this instance");
 		try {
-			List<String> url=documentInterface.listDocuments(null,buildHost(request));
+			Collection<String> url=documentInterface.listDocumentsURL(null,buildHost(request));
 			
-			return new ResponseEntity<List<String>>(url, HttpStatus.OK);
+			return new ResponseEntity<Collection<String>>(url, HttpStatus.OK);
 			
 		} catch (WOPIException e) {
 			e.logException();
@@ -76,7 +76,7 @@ public class RESTController {
 	 * 
 	 */
 	@GetMapping("/wopi/files/{documentId}")
-	public ResponseEntity<Document> checkFileInfo(@PathVariable("documentId") String documentId, @RequestParam(name="access_token") String accessToken) {
+	public ResponseEntity<Document> checkFileInfo(@PathVariable("documentId") String documentId, @RequestParam(name="access_token", required = false) String accessToken) {
 		logger.warn("Request for: information on file with id "+documentId);
 		try {
 			Document d=documentInterface.getDocumentProperties(documentId, accessToken);
@@ -141,7 +141,7 @@ public class RESTController {
 	 * 
 	 */
 	@PostMapping(value="/wopi/files/{documentId}/contents", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-	public ResponseEntity<PutFileResponse> putFile(@PathVariable("documentId") String documentId, @RequestParam(name="access_token") String accessToken, @RequestBody byte[] content) {
+	public ResponseEntity<PutFileResponse> putFile(@PathVariable("documentId") String documentId, @RequestParam(name="access_token", required = false) String accessToken, @RequestBody byte[] content) {
 		logger.warn("Request for: Update content of the file "+documentId);
 		try {
 			logger.trace("Getting "+content.length+" bytes");
@@ -165,7 +165,7 @@ public class RESTController {
 	 * 
 	 */
 	@GetMapping(value="/wopi/files/{documentId}/contents", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-	public ResponseEntity<byte[]> getFile(@PathVariable("documentId") String documentId, @RequestParam(name="access_token") String accessToken) {
+	public ResponseEntity<byte[]> getFile(@PathVariable("documentId") String documentId, @RequestParam(name="access_token", required = false) String accessToken) {
 		logger.warn("Request for: contents of file with id "+documentId);
 		try {
 			byte [] responseByteArray=documentInterface.getContent(documentId, accessToken);

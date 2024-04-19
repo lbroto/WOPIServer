@@ -1,6 +1,6 @@
 package org.wopiserver.documents.itf;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.wopiserver.controller.response.PutRelativeFileResponse;
 import org.wopiserver.documents.pojo.Document;
@@ -23,6 +23,12 @@ public interface DocumentService {
 	/** Save as document */
 	public PutRelativeFileResponse saveAs(String documentId, String accessToken, String newFileName, String localHost, byte[] content) throws WOPIException;
 	
-	/** Print out every document handled by this server */
-	public List<String> listDocuments(String ourAddress, String clientAddress) throws WOPIException;
+	/** Retrieve every document URL handled by this server */
+	public Collection<String> listDocumentsURL(String ourAddress, String clientAddress) throws WOPIException;
+	
+	/** Retrieve every document handled by this server */
+	public Collection<Document> listDocuments() throws WOPIException;
+
+	/** Retrieve document extension (to publish on the right endpoint */
+	public String getDocumentExtention(Document d);
 }

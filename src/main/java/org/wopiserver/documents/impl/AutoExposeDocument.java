@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
@@ -31,6 +32,7 @@ import org.wopiserver.controller.response.PutRelativeFileResponse.PutRelativeFil
 import org.wopiserver.documents.itf.DocumentService;
 import org.wopiserver.documents.pojo.Document;
 import org.wopiserver.exception.WOPIException;
+import org.wopiserver.helper.URLHelpers;
 
 import ch.qos.logback.classic.Logger;
 import jakarta.annotation.PostConstruct;
@@ -44,6 +46,8 @@ public class AutoExposeDocument implements DocumentService {
 
 	@Autowired
 	private ConfigurationService configurationService;
+	
+	
 	/**
 	 * 
 	 * This method look at new file in the baseDir every minute. Every new file are added in the documentMap
@@ -52,8 +56,7 @@ public class AutoExposeDocument implements DocumentService {
 	 * 
 	 * If a file is removed => we throw a 404 when properties or content are asked.
 	 * 
-	 */
-	
+	 */	
 	@Scheduled(fixedRate = 60000)
 	private void updateBaseDirContent() {
 		String baseDir=configurationService.getBaseDirectory();
@@ -226,7 +229,7 @@ public class AutoExposeDocument implements DocumentService {
 		logger.trace("Saving as "+buildAbsolutePath(documentId)+" -> "+buildAbsolutePath(fileNameWithNEWExtension));
 		
 		// build an answer for the client and return with it
-		return new PutRelativeFileResponseBuilder(d.getBaseFileName(),createURL(d.getDocumentId(), newAccessToken, localHost)).build();
+		return new PutRelativeFileResponseBuilder(d.getBaseFileName(),URLHelpers.createURL(d.getDocumentId(), newAccessToken, localHost)).build();
 	}
 	
 	@Override
@@ -257,7 +260,7 @@ public class AutoExposeDocument implements DocumentService {
 		logger.trace("Saving as "+buildAbsolutePath(documentId)+" -> "+buildAbsolutePath(newBaseFileNameWithPath));
 		
 		// build an answer for the client and return with it
-		return new PutRelativeFileResponseBuilder(d.getBaseFileName(),createURL(d.getBaseFileName(), newAccessToken, localHost)).build();
+		return new PutRelativeFileResponseBuilder(d.getBaseFileName(),URLHelpers.createURL(d.getBaseFileName(), newAccessToken, localHost)).build();
 	}
 
 	/********************************************************************************
@@ -267,12 +270,12 @@ public class AutoExposeDocument implements DocumentService {
 	 ********************************************************************************/
 	
 	@Override
-	public List<String> listDocuments(String ourAddress, String localHost) throws WOPIException {
-		List<String> url=new ArrayList<String>();
-		logger.info("Sending the list of documents managed by this instance.");
+	public Collection<String> listDocumentsURL(String ourAddress, String localHost) throws WOPIException {
+		Collection<String> url=new ArrayList<String>();
+		logger.info("Sending the list of documents URL managed by this instance.");
 		for(Document d: documentMap.values()) {
 			try {
-				url.add(URLEncoder.encode(createURL(d.getBaseFileName(), UUID.randomUUID().toString(), localHost), StandardCharsets.UTF_8.toString()));
+				url.add(URLEncoder.encode(URLHelpers.createURL(d.getBaseFileName(), UUID.randomUUID().toString(), localHost), StandardCharsets.UTF_8.toString()));
 			} catch (UnsupportedEncodingException e) {
 				throw new WOPIException(e, WOPIException.Issue.ACCESS_ERROR, WOPIException.Type.DOCUMENT, WOPIException.Operation.ENCODE);				
 			}
@@ -280,15 +283,22 @@ public class AutoExposeDocument implements DocumentService {
 		return url;
 	}
 	
+	@Override
+	public Collection<Document> listDocuments() throws WOPIException {
+		logger.trace("Sending the list of documents managed by this instance.");
+		return documentMap.values(); 
+	}
+	
+	@Override
+	public String getDocumentExtention(Document d) {
+		return FilenameUtils.getExtension(d.getBaseFileName());
+	}
+
 	/****************************************************************************
 	 * 																			*
 	 * 									Helpers									*
 	 * 																			*
 	 ****************************************************************************/
-
-	private String createURL(String documentId, String accessToken, String localHost) {
-		return "http://"+localHost+"/wopi/files/"+documentId+"?access_token="+accessToken;
-	}
 	
 	private String buildAbsolutePath(String baseFileName) {
 		return configurationService.getBaseDirectory()+"/"+baseFileName;

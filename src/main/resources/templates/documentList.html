@@ -1,0 +1,62 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<title>LibreOffice Online Document</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+	<script	src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+	<script>
+        function updateListDoc_f() {
+            $.get("update-list-doc").done(function(fragment) { 
+                $("#updateListDoc").replaceWith(fragment); 
+            }
+            );
+        }
+        setInterval(updateListDoc_f, 2000);
+    </script>
+</head>
+
+<body>
+	<div class="bg-image" style="background-image: url('/img/background.jpg'); background-size: cover; background-repeat: no-repeat; background-position: center;">
+
+		<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark">
+			<div class="container-fluid">
+				<div class="navbar-toggler-icon navbar-brand"></div>
+			</div>
+
+		</nav>
+
+		<main>
+			<div class="container">
+				<div class="p-5 my-4 bg-light rounded-3 opacity-75">
+					<h1>Hello! Find all your documents</h1>
+					<p class="lead">This table displays the documents you can open with Collabora Online.</p>
+				</div>
+			</div>
+	
+
+	        <div class="container rounded-3 opacity-75">
+		
+		        <div class="table-responsive">
+		            <table id="updateListDoc" class="table table-responsive table-bordered table-striped opacity-75 rounded-3">
+		                <thead>
+		                    <tr>
+		                        <th>Name</th>
+		                        <th>URL</th>
+		                     </tr>
+		                </thead>
+		                <tbody>
+		                    <tr th:each="doc : ${list}" style="cursor: pointer">
+		                        <div class="col-auto"><td th:text="${doc.key.baseFileName}"></td></div>
+		                        <div class="col-auto"><td><a th:href="${doc.value}" th:text="'Edit ' + ${doc.key.baseFileName} + ' in Collabora Online'" target="_blank"/></td></div>
+		                    </tr>
+		                </tbody>
+		            </table>
+		        </div>
+		    </div>
+	 	</main>
+	</div>
+</body>
+</html>

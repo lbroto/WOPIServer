@@ -21,6 +21,7 @@ repositories {
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 	implementation("commons-cli:commons-cli:1.5.0")
 	implementation("commons-io:commons-io:2.16.1")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")

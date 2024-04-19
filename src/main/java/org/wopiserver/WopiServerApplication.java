@@ -17,7 +17,6 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.wopiserver.configuration.itf.ConfigurationService;
-import org.wopiserver.documents.itf.DocumentService;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -28,9 +27,6 @@ public class WopiServerApplication {
 
 	@Autowired
 	private ConfigurationService configurationService;
-	
-	@Autowired
-	private DocumentService documentService;
 	
 	// to be passed to the instance in the container
 	private static HashMap<String,String> argsMap;
@@ -59,6 +55,8 @@ public class WopiServerApplication {
 			logLevelRequested="INFO";
 		
 		logger.setLevel(Level.toLevel(logLevelRequested));
+		
+		logArgs(args);
 
 		/* parsing the command line arguments, set the mode and storing the arguments */
 		argsMap=new HashMap<String,String>();
@@ -67,9 +65,12 @@ public class WopiServerApplication {
 		
 		// all modes
 		options.addOption("b", "baseDir", true, "[ ALL MODES ] The directory where the files to be served are located");
+		options.addOption("c", "codeURL", true, "[ ALL MODES ] The Collabora Online URL. Example: --codeURL https://localhost:9980");
+		options.addOption("p", "proxyHost", true, "[ ALL MODES ] Reverse proxy address. Example: --proxyHost 192.168.1.254");
+		options.addOption("k", "disableTLSCheck", false, "[ ALL MODES ] Disable SSL/TLS checks. Not recommanded.");
 
 		// documents mode
-		options.addOption("L", "listDocuments", false, "[ CLI - MODE DOCUMENTS ] List all documents managed by this WOPI instance");
+		//options.addOption("L", "listDocuments", false, "[ CLI - MODE DOCUMENTS ] List all documents managed by this WOPI instance");
 
 		try {
 			CommandLineParser parser = new DefaultParser();
@@ -85,19 +86,12 @@ public class WopiServerApplication {
 			
 			logger.info("Mode "+instanceMode+" detected");
 			
-			// now check args for each mode
-
-			// mandatory for all modes
-			if(line.hasOption("baseDir")) {	
-				argsMap.put("baseDir",line.getOptionValue("baseDir"));
-			} else {
-				exit=true;
-			}
+			parseAllModes(line);
 			
 			// looking for the arguments for each mode
 			switch(instanceMode) {
 				case InstanceMode.SERVER_AUTO_EXPOSITION:
-					;	// nothing to parse
+					parseServerMode(line);
 					break;
 				case InstanceMode.CLI_DOCUMENT:
 					parseDocumentMode(line);
@@ -112,7 +106,6 @@ public class WopiServerApplication {
 		// now start the application and leave the static domain
 		if(exit) {
 			printHelp(args, options);
-
 		}
 		else {
 			
@@ -131,9 +124,23 @@ public class WopiServerApplication {
 
 	@PostConstruct
 	public void construct() {
-
-		// here the application has been spawned in the container
+		
+		// now all the beans and especially the configuration beans are ready
+		// set the configuration
+		
 		configurationService.setConfiguration(argsMap.get("baseDir"));
+		
+		// process the optional args
+		if(argsMap.containsKey("disableTLSCheck"))
+			configurationService.disableTLSCheck();
+		
+		if(argsMap.containsKey("proxyHost")) {
+			configurationService.setProxyHost(argsMap.get("proxyHost"));
+		}
+		
+		if(argsMap.containsKey("codeURL")) {
+			configurationService.setCodeURL(argsMap.get("codeURL"));
+		}
 	//	try {
 			switch(instanceMode) {
 				case InstanceMode.SERVER_AUTO_EXPOSITION:
@@ -151,12 +158,51 @@ public class WopiServerApplication {
 	//	}		
 	}
 	
+	private static void parseAllModes(CommandLine line) {
+		logger.trace("Looking for "+instanceMode+" general parameters");
+		
+		// mandatory
+		if(line.hasOption("baseDir")) {	
+			argsMap.put("baseDir",line.getOptionValue("baseDir"));
+		} else {
+			exit=true;
+		}
+
+		// optional
+		if(line.hasOption("proxyHost")) {
+			argsMap.put("proxyHost",line.getOptionValue("proxyHost"));
+		}
+		
+		if(line.hasOption("codeURL")) {
+			argsMap.put("codeURL",line.getOptionValue("codeURL"));
+		}
+		
+		if(line.hasOption("disableTLSCheck")) {
+			argsMap.put("disableTLSCheck",null);
+		}
+
+	}
+	
+	private static void parseServerMode(CommandLine line) {
+		logger.trace("Looking for "+instanceMode+" mode parameters");
+
+	}
+	
 	private static void parseDocumentMode(CommandLine line) {
 		logger.trace("Looking for "+instanceMode+" mode parameters");
 		
 		// optional
 		if(line.hasOption("listDocuments")) {
 			argsMap.put("listDocuments", "listDocuments");
+		}
+
+	}
+	
+	private static void logArgs(String[] args) {
+		logger.trace("Received args:");
+		
+		for(String s:args) {
+			logger.trace("==> "+s);
 		}
 
 	}
@@ -197,18 +243,20 @@ public class WopiServerApplication {
 						"| SERVER MODE: this mode permits to communicate with Collabora Online |\n" +
 						"+---------------------------------------------------------------------+\n\n" +
 						"************************** SUB-MODE AUTO EXPOSITION ************************\n\n" +
-						"This mode is selected when only the param baseDir is passed. \n" +
+						"This mode is selected when no DB file (--dbFile) parameter is passed. \n" +
 						"In this mode, the baseDir is scanned every minutes and all the documents contained in baseDir are exposed.\n" +
+						"You can pass the --codeurl parameter to parametrize the URLs with the CODE endpoints.\n" +
+						"The reverse proxy permits to subsitute the CODE endpoint with the reverse proxy address .\n" +						
 						"The access_token is ignored in this mode.\n\n" +
 						"Example: java -jar WopiServerApplication.jar --baseDir /Users/laurent/tmp \n\n" +
-						"\n+---------------------------------------------------------------------------------------------+\n" +
+/*						"\n+---------------------------------------------------------------------------------------------+\n" +
 						  "| CLI MODE: theses modes permits to interact with WOPI (started or not depending on the mode) |\n" +
 						  "+---------------------------------------------------------------------------------------------+\n\n" +
 						"All these mode required the parameter baseDir.\n\n" +
 						"************************** SUB-MODE DOCUMENT ************************\n\n" +
 						"This mode permits to manage the documents handled by this WOPI instance. Only listDocuments is supported at this time.\n" +
 						"If the WOPI Server is started in SUB-MODE AUTO EXPOSITION, it must be started to list the documents managed\n" +
-						"Example: java -jar WopiServerApplication.jar --baseDir /Users/laurent/tmp --listDocuments\n\n" +
+						"Example: java -jar WopiServerApplication.jar --baseDir /Users/laurent/tmp --listDocuments\n\n" +*/
 						"\n+-------------------+\n" +
 						  "| DEBUGGING OPTIONS |\n" +
 						  "+-------------------+\n\n" +
