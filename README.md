@@ -7,6 +7,8 @@ Par exemple, il n'y pas de droits d'accès et on ne peut pas avoir plusieurs uti
 
 Le serveur une fois lancé expose des services REST, accessibles par la suite bureautique, mais aussi un service https qui permet d'afficher la liste des fichiers. Cette liste de fichier est cliquable et permet de se connecter à Libre Office avec la bonne URL. C'est la raison des paramètres proxyHost et code URL de l'application : être en mesure de générer la bonne URL.
 
+![Screenshot of file list](./Capture-d-cran-du-2025-04-23-13-46-52.png)
+
 Le code est prévu pour avoir plusieurs backends à l'aide d'une interface. Le seul mis en œuvre pour l'instant c'est un stockage sur disque local (avec auto discovery : on lui donne un répertoire et il expose tout les documents du répertoire).
 
 Il consomme peu de ressources, la charge dépendra plus de Collabora Online ou d'OnlyOffice. Le serveur WOPI se contente de lire un fichier à l'ouverture et de l'écrire de temps en temps (comme lors des enregistrements automatiques).
