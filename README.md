@@ -3,7 +3,7 @@ A lightweight WOPIServer
 
 Ce serveur est très simple, sur le principe que plus un système est simple, moins il a de chances de tomber en panne.
 
-Par exemple, il n'y pas de droits d'accès et on ne peut pas avoir plusieurs utilisateurs simultanés. Il faudrait mettre en œuvre le système de verrous et le système de droits d'accès (faire reposer les droits d'accès sur les droits du système de fichier, implique d'avoir un utilisateur sur la machine pour chaque utilisateur du logiciel). Cela n'a pas été implanté parce que je suis pour l'instant le seul utilisateur. Mais ce ne serait pas long à développer.
+Par exemple, il n'y pas de droits d'accès et on ne peut pas avoir plusieurs utilisateurs simultanés. Il faudrait mettre en œuvre le système de verrous et le système de droits d'accès (faire reposer les droits d'accès sur les droits du système de fichier, implique d'avoir un utilisateur sur la machine pour chaque utilisateur du logiciel). Cela n'a pas été implémenté parce que je suis encore le seul utilisateur. Mais ce ne serait pas long à développer.
 
 Le serveur une fois lancé expose des services REST, accessibles par la suite bureautique, mais aussi un service https qui permet d'afficher la liste des fichiers. Cette liste de fichier est cliquable et permet de se connecter à Libre Office avec la bonne URL. C'est la raison des paramètres proxyHost et code URL de l'application : être en mesure de générer la bonne URL.
 
