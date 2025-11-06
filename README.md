@@ -20,6 +20,10 @@ Je suis ouvert à toute requête :-)
 # Compiler
 un truc du genre `./gradlew bootJar` devrait "faire the trick"
 
+# Dans le répertoire _dist_
+
+Un fichier jar se trouve dans ce répertoire. Il a été compilé avec Gradle 8.14.3 et Java openjdk version "21.0.9" 2025-10-21
+
 # Lancer
 On peut le lancer avec java -jar. C'est du [Spring Boot](https://spring.io/). On pourrait utiliser systemd. De mon côté, je l'ai mis dans un container docker qui lance la commande suivante
 

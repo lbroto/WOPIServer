@@ -31,5 +31,3 @@ gradle
 gradlew
 gradlew.bat
 
-# ignore commodity files
-WopiServerApplication.jar
